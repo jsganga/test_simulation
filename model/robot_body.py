@@ -18,14 +18,55 @@ class body(object):
         self.height  = 1000
         self.width   = 500
         self.depth   = 250
-        self.head_side = 20
+        self.head_side = 200
         self.density = 0.5e-3 #g/mm^3, random
         self.mass_body = self.density * self.height * self.width * self.depth
         self.mass_head = self.density * self.head_side ** 3
         self.x_sensed  = np.zeros(6)
+        self.body_corners = np.array([[self.width / 2, self.depth / 2, 0],
+                                     [-self.width / 2, -self.depth / 2, self.height]])
+   
+        self.head_corners = np.array([[self.head_side / 2, self.head_side / 2, self.height],
+                                     [-self.head_side / 2, -self.head_side / 2, self.height + self.head_side]])
 
-    def get_wire_frame(self, n = 20):
-        '''gives the n x 3 array of the edges in ground frame'''
+        self.get_wire_frame()
+
+    def get_wire_frame(self):
+        '''gives the array of the edges in ground frame in the order that allows for 
+        the plotting of a line to connect the appropriate lines'''
         R = trig.R_zyz(self.x_sensed[3:])
+        self.body_points = self.get_line_array(self.body_corners).dot(R) + self.x_sensed[:3]
+        self.head_points = self.get_line_array(self.head_corners).dot(R) + self.x_sensed[:3]
+
+    def get_line_array(self, corners):
+        '''ordering the corners, overlaps are necessary for this approach'''
+        indeces = np.array([[0, 0, 0],
+                            [1, 0, 0],
+                            [1, 1, 0],
+                            [0, 1, 0],
+                            [0, 0, 0],
+                            [0, 0, 1],
+                            [1, 0, 1],
+                            [1, 0, 0],
+                            [1, 0, 1],
+                            [1, 1, 1],
+                            [1, 1, 0],
+                            [1, 1, 1],
+                            [0, 1, 1],
+                            [0, 1, 0],
+                            [0, 1, 1],
+                            [0, 0, 1]])
+        return corners[indeces, [0,1,2]]
+
+
+
+
+
+
+
+
+
+
+
         
 
