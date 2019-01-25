@@ -70,9 +70,12 @@ screen_height = 512
 
 class graphics(object):
     """graphics object to handle displaying the flappy game"""
-    def __init__(self, game):
+    def __init__(self, game, real_time=True):
         super(graphics, self).__init__()
         self.game = game
+        self.real_time = real_time
+        self.screen = None
+
         pygame.init()
         self.screen = pygame.display.set_mode((self.game.screen_width, self.game.screen_height))
 

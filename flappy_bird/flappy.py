@@ -1,22 +1,24 @@
 import random
 import sys, time
 import flappy_bird.flappy_graphics as fg
+import numpy as np
 
 
 class flappy(object):
     """object to hold the state of the flappy game"""
-    def __init__(self):
+    def __init__(self, real_time=True):
         super(flappy, self).__init__()
         self.fps = 30
         self.screen_width  = 288
         self.screen_height = 512
+        self.real_time=real_time
 
-        self.graphics = fg.graphics(self)
+        self.graphics = fg.graphics(self, real_time=real_time)
         self.graphics.load_images()
 
         self.initialize_game()
-        self.graphics.load_images()
-        self.graphics.initialize_display()
+        if real_time:
+            self.graphics.initialize_display()
 
 
     def initialize_game(self):        
@@ -85,15 +87,16 @@ class flappy(object):
                 top_edge    =  self.y_bird <= uPipe['y'] + self.pipe_height # +y down!!
                 bottom_edge =  self.y_bird + self.bird_height >= lPipe['y']
                 if top_edge or bottom_edge:
-                    print(top_edge, bottom_edge)
-                    print(self.x_bird + self.bird_width, self.y_bird + self.bird_height, uPipe, lPipe)
+                    # print(top_edge, bottom_edge)
+                    # print(self.x_bird + self.bird_width, self.y_bird + self.bird_height, uPipe, lPipe)
                     self.end_game()
 
 
     def end_game(self):
         self.game_over = True
-        self.graphics.show_score()
-        self.graphics.update_display()
+        if self.real_time:
+            self.graphics.show_score()
+            self.graphics.update_display()
 
 
     def move_screen(self):
@@ -142,6 +145,26 @@ class flappy(object):
             {'x': pipeX, 'y': gapY - self.pipe_height},  # upper pipe
             {'x': pipeX, 'y': gapY + self.pipe_gap}, # lower pipe
         ]
+
+    def get_state(self):
+        # easy call to get the true state of the game
+        # return {
+        #     'position':self.y_bird,
+        #     'velocity':self.playerVelY,
+        #     'upper_pipes':self.upperPipes,
+        #     'lower_pipes':self.lowerPipes,
+        # }
+        full_state = np.zeros(20) # max size
+        upper_pipe_x = np.array([pipe['x'] for pipe in self.upperPipes]) - self.x_bird
+        upper_pipe_y = np.array([pipe['y'] for pipe in self.upperPipes]) + self.pipe_height
+        lower_pipe_x = np.array([pipe['x'] for pipe in self.lowerPipes]) - self.x_bird
+        lower_pipe_y = np.array([pipe['y'] for pipe in self.lowerPipes]) - self.bird_height
+        new_state = np.hstack((self.y_bird, self.playerVelY, upper_pipe_x, upper_pipe_y, 
+            lower_pipe_x, lower_pipe_y))
+        full_state[:len(new_state)] = new_state
+        # print("[get_state] new state len: ", len(new_state))
+
+        return full_state
 
 
 
